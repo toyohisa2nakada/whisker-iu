@@ -1,0 +1,51 @@
+image: satantime/puppeteer-node:24.11.0-bullseye
+
+stages:
+  - build
+  - lint
+  - test
+  - integrationtest
+
+before_script:
+  # Test Whisker against a specific commit of the scratch-vm or scratch-render.
+  # Can be used either by pipelines in other projects to trigger a downstream
+  # build while using a specific commit, or when manually triggering a CI
+  # pipeline via the GitLab UI.
+  - yarn ci:prepare-downstream-build
+  - yarn install --cache-folder .yarn
+
+cache:
+  paths:
+    - node_modules/
+    - .yarn
+    - .cache
+    - .webpack-cache-js/
+
+build_all:
+  stage: build
+  script:
+    - yarn install
+    - mkdir -p output/static
+    - yarn build-main
+    - yarn build-web
+  artifacts:
+    expire_in: 1 day
+    paths:
+      - whisker-main/dist
+      - whisker-web/dist
+
+unit-tests:
+  stage: test
+  script:
+    - yarn test
+    - mkdir -p output/static
+
+integration-tests:
+    stage: integrationtest
+    script:
+        - yarn integrationtest
+
+lint:
+    stage: lint
+    script:
+        - yarn ci:lint

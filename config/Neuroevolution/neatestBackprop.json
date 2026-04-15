@@ -1,0 +1,88 @@
+{
+    "testGenerator": "neuroevolution",
+    "algorithm": "neatest",
+    "eventSelection": "activation",
+    "populationSize": 150,
+    "numberOfSpecies": 5,
+    "parentsPerSpecies": 0.30,
+    "penalizingAge": 20,
+    "ageSignificance": 1.0,
+    "switchObjectiveCount": 10,
+    "classificationType": "multiLabel",
+    "extractor": "neuroevolution",
+    "aTRepetitions": 0,
+    "chromosome": {
+        "type": "neatChromosome",
+        "activationFunction": "SIGMOID",
+        "inputConnectionMethod": "fully"
+    },
+    "gradientDescent": {
+        "probability": 0.6,
+        "learningRate": 0.1,
+        "learningRateAlgorithm": "Static",
+        "epochs": 1000,
+        "batchSize": 1,
+        "combinePlayerRecordings": false
+    },
+    "crossover": {
+        "operator": "neatCrossover",
+        "crossoverWithoutMutation": 0.25,
+        "interspeciesRate": 0.01,
+        "weightAverageRate": 0.5
+    },
+    "mutation": {
+        "operator": "neatMutation",
+        "mutationWithoutCrossover": 0.25,
+        "mutationAddConnection": 0.1,
+        "recurrentConnection": 0.05,
+        "addConnectionTries": 10,
+        "populationChampionNumberOffspring": 3,
+        "populationChampionNumberClones": 1,
+        "populationChampionConnectionMutation": 0.3,
+        "mutationAddNode": 0.05,
+        "mutateWeights": 0.8,
+        "perturbationPower": 0.5,
+        "mutateToggleEnableConnection": 0.05,
+        "toggleEnableConnectionTimes": 3,
+        "mutateEnableConnection": 0.03
+    },
+    "compatibility": {
+        "distanceThreshold": 1.0,
+        "distanceModifier": 0.2,
+        "disjointCoefficient": 3,
+        "excessCoefficient": 3,
+        "weightCoefficient": 0.4
+    },
+    "fitnessFunction": {
+        "type": "statement",
+        "targets": []
+    },
+    "networkFitness": {
+        "type": "reliableStatement",
+        "timeout": 10000,
+        "stableCount": 10
+    },
+    "population": {
+        "strategy": "global_solutions",
+        "randomFraction": 0.3
+    },
+    "stoppingCondition": {
+        "type": "combined",
+        "conditions": [
+            {
+                "type": "optimal"
+            },
+            {
+                "type": "fixedTime",
+                "duration": 7200000
+            }
+        ]
+    },
+    "events": {
+        "actionThreshold": 0.5,
+        "skipFrame": 3,
+        "typeNumberMagnitude": 100
+    },
+    "assertions": false,
+    "minimizeAssertions": false
+}

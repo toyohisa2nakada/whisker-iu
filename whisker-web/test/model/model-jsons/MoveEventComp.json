@@ -1,0 +1,84 @@
+[
+    {
+        "usage": "program",
+        "id": "test",
+        "startNodeId": "n0",
+        "stopAllNodeIds": [],
+        "nodes": [
+            {
+                "id": "n0",
+                "label": "n0"
+            },
+            {
+                "id": "n1",
+                "label": "n1"
+            },
+            {
+                "id": "end",
+                "label": "end"
+            }
+        ],
+        "edges": [
+            {
+                "id": "timeOver",
+                "label": "timeOver",
+                "from": "n1",
+                "to": "end",
+                "forceTestAfter": -1,
+                "forceTestAt": -1,
+                "conditions": [
+                    {
+                        "name": "TimeElapsed",
+                        "args": [
+                            5000
+                        ],
+                        "negated": false
+                    }
+                ],
+                "effects": []
+            },
+            {
+                "id": "moved",
+                "label": "moved",
+                "from": "n0",
+                "to": "n1",
+                "forceTestAfter": -1,
+                "forceTestAt": -1,
+                "conditions": [
+                    {
+                        "name": "AttrComp",
+                        "args": [
+                            "Sprite1",
+                            "y",
+                            "==",
+                            -10
+                        ],
+                        "negated": false
+                    }
+                ],
+                "effects": []
+            },
+            {
+                "id": "moved2",
+                "label": "moved2",
+                "from": "n1",
+                "to": "n0",
+                "forceTestAfter": -1,
+                "forceTestAt": -1,
+                "conditions": [
+                    {
+                        "name": "AttrComp",
+                        "args": [
+                            "Sprite1",
+                            "y",
+                            "==",
+                            0
+                        ],
+                        "negated": false
+                    }
+                ],
+                "effects": []
+            }
+        ]
+    }
+]

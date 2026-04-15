@@ -1,0 +1,61 @@
+[
+    {
+        "id": "program",
+        "usage": "program",
+        "startNodeId": "0",
+        "nodes": [
+            {
+                "id": "0",
+                "label": "start"
+            },
+            {
+                "id": "key pressed",
+                "label": "key pressed"
+            },
+            {
+                "id": "end",
+                "label": "end"
+            }
+        ],
+        "stopAllNodeIds": [
+            "end"
+        ],
+        "edges": [
+            {
+                "id": "e91ed9cc8bd538",
+                "label": "key pressed",
+                "from": "0",
+                "to": "key pressed",
+                "forceTestAfter": -1,
+                "forceTestAt": -1,
+                "conditions": [
+                    {
+                        "args": [],
+                        "negated": false,
+                        "name": "AnyKey"
+                    }
+                ],
+                "effects": []
+            },
+            {
+                "id": "36c4ba6668355",
+                "label": "cat says something",
+                "from": "key pressed",
+                "to": "end",
+                "forceTestAfter": -1,
+                "forceTestAt": -1,
+                "conditions": [
+                    {
+                        "args": [
+                            "Sprite1",
+                            "Any Key was pressed"
+                        ],
+                        "negated": false,
+                        "name": "Output"
+                    }
+                ],
+                "effects": []
+            }
+        ]
+    }
+]
