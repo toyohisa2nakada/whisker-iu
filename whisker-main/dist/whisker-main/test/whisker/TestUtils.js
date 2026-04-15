@@ -1,0 +1,21 @@
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.generateNetworkInputs = void 0;
+const generateNetworkInputs = () => {
+    const genInputs = new Map();
+    const sprite1 = new Map();
+    sprite1.set("X-Position", 1);
+    sprite1.set("Y-Position", 2);
+    sprite1.set("Costume", 3);
+    sprite1.set("DistanceToSprite2-X", 4);
+    sprite1.set("DistanceToSprite2-y", 5);
+    genInputs.set("Sprite1", sprite1);
+    const sprite2 = new Map();
+    sprite2.set("X-Position", 6);
+    sprite2.set("Y-Position", 7);
+    sprite2.set("DistanceToWhite-X", 8);
+    sprite2.set("DistanceToWhite-Y", 9);
+    genInputs.set("Sprite2", sprite2);
+    return genInputs;
+};
+exports.generateNetworkInputs = generateNetworkInputs;

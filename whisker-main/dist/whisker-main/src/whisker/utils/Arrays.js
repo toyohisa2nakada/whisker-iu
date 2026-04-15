@@ -1,0 +1,292 @@
+"use strict";
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.shuffle = void 0;
+const lodash_isequal_1 = __importDefault(require("lodash.isequal"));
+const Randomness_1 = require("./Randomness");
+/**
+ * Provides various utility methods for manipulating arrays.
+ *
+ * @author Sophia Geserer, Patric Feldmeier, Sebastian Schweikl
+ */
+class Arrays {
+    /**
+     * Adds all the elements of the second array to the first array. Modifies the first array in-place. Returns the
+     * new length of the first array.
+     *
+     * @param dst the destination array to which the elements are added
+     * @param src the source array from which the elements are taken
+     * @return the new length of the destination array
+     */
+    static addAll(dst, src) {
+        return dst.push(...src);
+    }
+    /**
+     * Returns a new array consisting only of the distinct elements of the given array. Equality semantics are those
+     * of strict equality comparison (`===`). In particular, two objects `o` and `p` are equal if and only if `o` and
+     * `p` are aliases, and not if they are structurally equivalent. Example:
+     * ```
+     * const o = { a: 1 };
+     * const p = o;
+     * const q = { a: 1 };
+     * distinct([o, p, q]); // returns [o, q]
+     * ```
+     *
+     * @returns T[] consisting of the distinct elements.
+     */
+    static distinct(elements) {
+        const array = Array.isArray(elements) ? elements : [...elements];
+        return array.filter((o, i, arr) => arr.findIndex(t => t === o) === i);
+    }
+    /**
+     * Returns a new array consisting only of the distinct elements of the given array. Equality semantics are those
+     * of strict equality comparison (`===`) for primitive types, and structural equality for object types. In
+     * particular, two objects `o` and `p` are equal if and only if both have the same key-value pairs. Example:
+     * ```
+     * const o = { a: 1 };
+     * const p = o;
+     * const q = { a: 1 };
+     * distinct([o, p, q]); // returns [o]
+     * ```
+     *
+     * @returns T[] consisting of the distinct elements.
+     */
+    static distinctObjects(elements) {
+        const array = Array.isArray(elements) ? elements : [...elements];
+        return array.filter((o, i, arr) => arr.findIndex(t => (0, lodash_isequal_1.default)(t, o)) === i);
+    }
+    /**
+     * Returns a new array consisting only of the distinct elements of the given array based on a custom
+     * defined comparator function that determines whether two values are treated as equal or not.
+     * @param array the array from which we want to eliminate duplicates.
+     * @param comparator custom function determining when two values are treated as equal.
+     * @returns T[] consisting of the distinct elements based on the equality function.
+     */
+    static distinctByComparator(array, comparator) {
+        return array.filter((o, i, arr) => arr.findIndex(t => comparator(t, o)) === i);
+    }
+    /**
+     * Removes the first occurrence of the specified element from the given array, using the equality semantics of
+     * `===`. The array is modified in-place.
+     *
+     * @param array from which to remove an element
+     * @param element the element to be removed
+     */
+    static remove(array, element) {
+        const index = array.indexOf(element, 0);
+        if (index > -1) {
+            array.splice(index, 1);
+        }
+    }
+    /**
+     * Removes the given element from the array. Elements are compared deeply by their structure. The original array
+     * is not modified, instead a copy of the array without the element is returned.
+     *
+     * @param array The array from which to remove the element
+     * @param element The element to remove
+     */
+    static removeElem(array, element) {
+        return array.filter((x) => !(0, lodash_isequal_1.default)(x, element));
+    }
+    /**
+     * Removes all elements passing the `test` from the given `array`. The array is modified in-place.
+     *
+     * @param array the array from which to remove elements
+     * @param test the test telling whether an element is to be removed
+     */
+    static removeIf(array, test) {
+        let i = 0;
+        while (i < array.length) {
+            if (test(array[i])) {
+                Arrays.removeAt(array, i);
+            }
+            else {
+                i++;
+            }
+        }
+    }
+    /**
+     * Removes all elements in the given array.
+     *
+     * @param array the array to clear
+     */
+    static clear(array) {
+        array.length = 0;
+    }
+    /**
+     * Creates a shallow copy of the given array.
+     *
+     * @param array to copy
+     * @return copy of the array
+     */
+    static clone(array) {
+        return [...array];
+    }
+    /**
+     * Returns the index of the first element in the array which is equal (`===`) to the given target element.
+     *
+     * @param array to search
+     * @param targetElement the element which should be found in the array
+     * @return number representing the index of the found element, or -1 if the searched element wasn't found.
+     */
+    static findElement(array, targetElement) {
+        return array.findIndex(element => element === targetElement);
+    }
+    /**
+     * Replaces the oldElement with the newElement.
+     *
+     * @param array in which to replace
+     * @param oldElement the element to replace.
+     * @param newElement the element, oldElement gets replaced with.
+     * @return Returns true if the operation was successful and false otherwise.
+     */
+    static replace(array, oldElement, newElement) {
+        const index = array.findIndex(element => element === oldElement);
+        if (index === -1)
+            return false;
+        this.replaceAt(array, newElement, index);
+        return true;
+    }
+    /**
+     * Replaces the element at the given position with the specified element.
+     *
+     * @param array
+     * @param newElement the new element to replaceAt the old element with.
+     * @param position the position at which the old element should be replaced with the new element.
+     * @return Returns true if the operation was successful and false otherwise.
+     */
+    static replaceAt(array, newElement, position) {
+        if (position < 0 || position > array.length - 1) {
+            return false;
+        }
+        array[position] = newElement;
+        return true;
+    }
+    /**
+     * Removes the element at the given position from the given array.
+     *
+     * @param array from which an element should be removed.
+     * @param position the position of the element to remove
+     */
+    static removeAt(array, position) {
+        array.splice(position, 1);
+    }
+    /**
+     * In place removal of all elements in the source array that are given in the remove array.
+     * This also includes all duplicates within the remove array.
+     *
+     * @param source The source array from which we will remove elements.
+     * @param remove The array hosting elements that will be removed from the source array.
+     * @returns The source array with removed elements.
+     */
+    static removeAll(source, remove) {
+        return source.filter((el) => !remove.includes(el));
+    }
+    /**
+     * Inserts the specified element at the specified position.
+     *
+     * @param array to which an element should be added.
+     * @param element element to be added to the given array.
+     * @param position position where to insert the element
+     */
+    static insert(array, element, position) {
+        array.splice(position, 0, element);
+    }
+    /**
+     * Returns {@code true} if the given array contains no elements.
+     * @returns {@code true} if the given array contains no elements
+     */
+    static isEmpty(array) {
+        return array.length === 0;
+    }
+    /**
+     * Randomly permutes the given array using a default source of randomness.
+     */
+    static shuffle(array) {
+        let currentIndex = array.length;
+        let temporaryValue;
+        let randomIndex;
+        while (0 !== currentIndex) {
+            randomIndex = Randomness_1.Randomness.getInstance().nextInt(0, currentIndex);
+            currentIndex -= 1;
+            temporaryValue = array[currentIndex];
+            array[currentIndex] = array[randomIndex];
+            array[randomIndex] = temporaryValue;
+        }
+    }
+    /**
+     * Splits an existing array into equal sized sub-arrays. The size of the last chunk may be smaller than the
+     * specified chunkSize iff array.length % chunkSize !== 0. In case chunkSize <= 0, we simply wrap an array
+     * around the given array.
+     * @param array the array that should be split into chunks.
+     * @param chunkSize the size of the sub-arrays.
+     * @returns T[][] a 2-dimensional array containing sub-arrays of size chunkSize created from the given array.
+     */
+    static chunk(array, chunkSize) {
+        if (chunkSize <= 0) {
+            return [array];
+        }
+        const chunkArray = [];
+        for (let i = 0; i < array.length; i += chunkSize) {
+            chunkArray.push(array.slice(i, i + chunkSize));
+        }
+        return chunkArray;
+    }
+    static sort(array) {
+        array.sort((a, b) => a - b);
+    }
+    /**
+     * Creates an Array containing elements within the given range with the specified step size.
+     * @param start starting value inclusive.
+     * @param stop stopping value exclusive.
+     * @param step stepSize.
+     * @returns Array<number> containing elements from start to stop with specified step size.
+     */
+    static range(start, stop, step = 1) {
+        return Array(Math.ceil((stop - start) / step)).fill(start).map((x, y) => x + y * step);
+    }
+    /**
+     * Create a random array of numbers in the range [minValue, maxValue] with a specified length.
+     * @param minValue lower bound inclusive.
+     * @param maxValue upper bound exclusive.
+     * @param length size of created array.
+     * @returns Array<number> with the specified value range and length.
+     */
+    static getRandomArray(minValue, maxValue, length) {
+        return Array.from({ length: length }, () => Math.floor(Math.random() * (maxValue - minValue + 1)) + minValue);
+    }
+    /**
+     * Subtracts two array if they have the same size.
+     * @param minuend the array from which we will subtract.
+     * @param subtrahend the array which will be subtracted from the minuend.
+     * @returns Array<number> the difference between the two arrays.
+     */
+    static subtract(minuend, subtrahend) {
+        // Make sure the subtrahend is at least as big as the minuend; pad with zeros if necessary.
+        if (minuend.length > subtrahend.length) {
+            subtrahend.push(...[minuend.length - subtrahend.length].fill(0));
+        }
+        return minuend.map(((value, index) => value - subtrahend[index]));
+    }
+    /**
+     * Multiplies each element of the array with the given scalar value.
+     * @param array the array with which the scalar should be multiplied.
+     * @param scalar the scalar to be multiplied with the array.
+     * @returns Array<number> the array after multiplying the scalar to the given array.
+     */
+    static scalarProduct(array, scalar) {
+        return array.map(value => value * scalar);
+    }
+    /**
+     * Returns the last element from an array.
+     *
+     * @param array the last element
+     */
+    static last(array) {
+        return array[array.length - 1];
+    }
+}
+exports.default = Arrays;
+exports.shuffle = Arrays.shuffle;

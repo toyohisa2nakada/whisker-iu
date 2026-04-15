@@ -1,0 +1,53 @@
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+const SpriteMock_1 = require("../mocks/SpriteMock");
+const TestDriverMock_1 = require("../mocks/TestDriverMock");
+const CheckUtilityMock_1 = require("../mocks/CheckUtilityMock");
+const TouchingEdge_1 = require("../../../../src/whisker/model/checks/TouchingEdge");
+const CheckResult_1 = require("../../../../src/whisker/model/checks/CheckResult");
+describe('TouchingEdge tests', () => {
+    const graphID = "graphID";
+    const sprite = new SpriteMock_1.SpriteMock("apple");
+    sprite.visible = true;
+    const tdMock = new TestDriverMock_1.TestDriverMock([sprite]);
+    const t = tdMock.getTestDriver();
+    const cu = (0, CheckUtilityMock_1.getDummyCheckUtility)();
+    const label = "label";
+    const negated = false;
+    test('Touching only HorizontalEdgeCheck', () => {
+        const c = new TouchingEdge_1.TouchingHorizEdge(label, { negated, args: [sprite._name] });
+        c.registerComponents(t, cu, graphID);
+        sprite.touchingVerticalEdge = true;
+        sprite.touchingHorizontalEdge = false;
+        expect(c.check()).toStrictEqual((0, CheckResult_1.fail)({}));
+        sprite.touchingHorizontalEdge = true;
+        expect(c.check()).toStrictEqual((0, CheckResult_1.pass)());
+        sprite.touchingVerticalEdge = false;
+        expect(c.check()).toStrictEqual((0, CheckResult_1.pass)());
+    });
+    test('Touching only VerticalEdgeCheck', () => {
+        const c = new TouchingEdge_1.TouchingVerticalEdge(label, { negated, args: [sprite._name] });
+        c.registerComponents(t, cu, graphID);
+        sprite.touchingVerticalEdge = false;
+        sprite.touchingHorizontalEdge = true;
+        expect(c.check()).toStrictEqual((0, CheckResult_1.fail)({}));
+        sprite.touchingVerticalEdge = true;
+        expect(c.check()).toStrictEqual((0, CheckResult_1.pass)());
+        sprite.touchingHorizontalEdge = false;
+        expect(c.check()).toStrictEqual((0, CheckResult_1.pass)());
+    });
+    test('Touching any edge', () => {
+        const c = new TouchingEdge_1.TouchingEdge(label, { negated, args: [sprite._name] });
+        c.registerComponents(t, cu, graphID);
+        sprite.touchingVerticalEdge = false;
+        sprite.touchingHorizontalEdge = false;
+        expect(c.check()).toStrictEqual((0, CheckResult_1.fail)({}));
+        sprite.touchingVerticalEdge = true;
+        expect(c.check()).toStrictEqual((0, CheckResult_1.pass)());
+        sprite.touchingVerticalEdge = false;
+        sprite.touchingHorizontalEdge = true;
+        expect(c.check()).toStrictEqual((0, CheckResult_1.pass)());
+        sprite.touchingVerticalEdge = true;
+        expect(c.check()).toStrictEqual((0, CheckResult_1.pass)());
+    });
+});

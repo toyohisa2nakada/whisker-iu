@@ -1,0 +1,41 @@
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+const CheckUtilityMock_1 = require("../mocks/CheckUtilityMock");
+const SpriteMock_1 = require("../mocks/SpriteMock");
+const selectors_1 = require("../../../../src/assembler/utils/selectors");
+const TestDriverMock_1 = require("../mocks/TestDriverMock");
+const VarChange_1 = require("../../../../src/whisker/model/checks/VarChange");
+const CheckResult_1 = require("../../../../src/whisker/model/checks/CheckResult");
+const globals_1 = require("@jest/globals");
+describe('VarChange tests', () => {
+    const graphID = "graphID";
+    const dummyCU = (0, CheckUtilityMock_1.getDummyCheckUtility)();
+    const stage = new SpriteMock_1.SpriteMock(selectors_1.STAGE_NAME);
+    const oldStage = new SpriteMock_1.SpriteMock(selectors_1.STAGE_NAME);
+    const apple = new SpriteMock_1.SpriteMock("apple");
+    const banana = new SpriteMock_1.SpriteMock("banana");
+    stage.variables = [{ name: "Punkte", value: 9, old: { name: "Punkte", value: 10 } }];
+    stage._old = oldStage;
+    apple.variables = [{ name: "x", value: 2 }];
+    const tdMock = new TestDriverMock_1.TestDriverMock([banana, new SpriteMock_1.SpriteMock("bowl"), apple, stage]);
+    tdMock.stage = stage.sprite;
+    const t = tdMock.getTestDriver();
+    test('VarEvent is registered on CheckUtil', () => {
+        const fn = jest.fn();
+        const cuMock = new CheckUtilityMock_1.CheckUtilityMock();
+        cuMock.registerOnVarEvent = fn;
+        const cu = cuMock.getCheckUtility();
+        const c = new VarChange_1.VarChange('label', { args: ["apple", "x", "+"] });
+        c.registerComponents(t, cu, graphID);
+        (0, globals_1.expect)(fn).toHaveBeenLastCalledWith(apple.variables[0].name, graphID);
+    });
+    test('Check works for stage', () => {
+        const c = new VarChange_1.VarChange('label', { args: [selectors_1.STAGE_NAME, "Punkte", "-"] });
+        c.registerComponents(t, dummyCU, graphID);
+        (0, globals_1.expect)(c.check()).toEqual((0, CheckResult_1.pass)());
+        stage.variables = [{ name: "Punkte", value: 10, old: { name: "Punkte", value: 9 } }];
+        const reason = { "after": 10, "before": 9 };
+        tdMock.nextStep();
+        (0, globals_1.expect)(c.check()).toEqual((0, CheckResult_1.fail)(reason));
+    });
+});
