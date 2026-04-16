@@ -1,0 +1,651 @@
+<!doctype html>
+<html lang="ja">
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <title>学生課題チェック - Whisker</title>
+
+    <!-- 元のindex.htmlが依存しているwhisker関連のライブラリやスクリプトを読み込む -->
+    <link rel="icon" type="image/png" href="assets/favicon_whisker.png" />
+    <link rel="stylesheet" href="whisker-gui.css" />
+    <script defer src="whisker-gui.js"></script>
+    <script src="includes/bootstrap.js"></script>
+    <script type="text/javascript" src="includes/jquery-1.4.3.min.js"></script>
+    <script type="text/javascript" src="includes/jquery.fancybox-1.3.4.pack.js"></script>
+    <!-- <script type="text/javascript" src="includes/prettify.js"></script> -->
+    <link rel="stylesheet" href="includes/jquery.fancybox-1.3.4.css" type="text/css" media="screen" />
+
+    <style>
+        body {
+            padding: 40px;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f8fafc;
+            color: #333;
+        }
+
+        h1 {
+            margin-bottom: 30px;
+            font-weight: bold;
+            color: #1a202c;
+            text-align: center;
+        }
+
+        .table-container {
+            background: #fff;
+            padding: 20px;
+            border-radius: 12px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+            max-width: 900px;
+            margin: 0 auto;
+        }
+
+        .table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .table th,
+        .table td {
+            border-bottom: 1px solid #edf2f7;
+            padding: 15px;
+            text-align: left;
+            vertical-align: middle;
+        }
+
+        .table th {
+            background-color: #f7fafc;
+            font-weight: bold;
+            width: 60%;
+            font-size: 1.1em;
+            color: #4a5568;
+            border-top: none;
+        }
+
+        .table td.result-col {
+            width: 40%;
+            font-weight: bold;
+            font-size: 1.2em;
+            text-align: center;
+        }
+
+        .drop-zone {
+            border: 2px dashed #cbd5e0;
+            border-radius: 8px;
+            padding: 25px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            background-color: #fbfdff;
+        }
+
+        .drop-zone:hover,
+        .drop-zone.hover {
+            background-color: #ebf4ff;
+            border-color: #4299e1;
+        }
+
+        .drop-zone input[type="file"] {
+            display: none;
+        }
+
+        .drop-zone-text {
+            font-size: 1.05em;
+            color: #4a5568;
+            margin-bottom: 15px;
+        }
+
+        .file-label {
+            display: block;
+            margin-top: 12px;
+            color: #718096;
+            font-size: 0.9em;
+            word-break: break-all;
+        }
+
+        .btn-upload {
+            background-color: #4299e1;
+            color: #fff;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 0.95em;
+            transition: background-color 0.2s;
+        }
+
+        .btn-upload:hover {
+            background-color: #3182ce;
+        }
+
+        /* ステータス別の色 */
+        .status-unexecuted {
+            color: #a0aec0;
+        }
+
+        .status-checking {
+            color: #d69e2e;
+        }
+
+        .status-success {
+            color: #38a169;
+        }
+
+        .status-fail {
+            color: #e53e3e;
+        }
+
+        /* Whisker/Scratchの実行に必要な要素 (Headless実行のため、表示しない) */
+        #scratch-stage-container {
+            display: none;
+        }
+    </style>
+</head>
+
+<body>
+    <div id="header" role="navigation" style="display: none;"></div>
+    <div id="model-editor" class="mt-4 spacer10" style="display: none;">
+        <h3 data-i18n="modelEditor:title"></h3>
+        <div class="col" style="background-color: #f1f1f1; border-radius: 5px;">
+            <!-- model editor TABS -->
+            <div class="row tab-model-editor">
+                <div id="model-tabs" class="col"></div>
+                <div id="model-add-tab-container" class="col">
+                    <button id="model-editor-add-tab" type="button" class="tab-model-editor-button"
+                        data-i18n="modelEditor:newTab">
+                    </button>
+                </div>
+            </div>
+
+            <!-- model editor CANVAS and RIGHT PANE-->
+            <div class="row spacer10" id="model-editor-content">
+                <div class="col">
+                    <!-- model editor CANVAS -->
+                    <div class="row model-editor-canvas-wrap">
+                        <div id="model-editor-canvas" class="col model-editor-canvas"></div>
+                    </div>
+
+                    <!-- model editor BUTTONS -->
+                    <div class="row my-2">
+                        <div class="col model-add-buttons-div">
+                            <button id="model-add-node" type="button" class="btn btn-sm model-button center"
+                                data-i18n="modelEditor:addNode"></button>
+                        </div>
+                        <div class="col model-add-buttons-div">
+                            <button id="model-add-edge" type="button" class="btn btn-sm model-button center"
+                                data-i18n="modelEditor:addEdge"></button>
+                        </div>
+                        <div class="col model-add-buttons-div">
+                            <button id="model-fit" type="button" class="btn btn-sm model-button center"
+                                data-i18n="modelEditor:fit"></button>
+                        </div>
+                        <div class="col model-add-buttons-div">
+                            <select name="model-layout" id="model-layout" class="center">
+                                <option value="none" data-i18n="modelEditor:layout1"></option>
+                                <option value="treeLR" data-i18n="modelEditor:layout2"></option>
+                                <option value="treeUD" data-i18n="modelEditor:layout3"></option>
+                            </select>
+                        </div>
+                        <div class="col hide model-cancel-add-div">
+                            <!-- For the explanation, filled by buttons  -->
+                            <label id="model-explanation"></label>
+                        </div>
+                        <div class="col-2 hide model-cancel-add-div">
+                            <button id="model-cancel-add" type="button" class="btn btn-sm model-button center"
+                                data-i18n="modelEditor:cancel"></button>
+                        </div>
+                        <div class="col hide model-delete-div">
+                            <label data-i18n="modelEditor:selection-explanation"></label>
+                        </div>
+                        <div class="col-4 hide model-delete-div">
+                            <button id="model-delete-selection" type="button" class="btn btn-sm model-button center"
+                                data-i18n="modelEditor:deleteSelection"></button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- model editor RIGHT PANE -->
+                <div class="col-4 mt-1">
+
+                    <!-- model editor MODEL CONFIG PANEL-->
+                    <div id="model-general-settings">
+                        <div class="row">
+                            <h4 data-i18n="modelEditor:general-settings-header" style="width:80%;"></h4>
+                            <button id="model-delete-button" type="button" class="model-button model-small-button right"
+                                data-toggle="tooltip" data-placement="top" data-animation="false"
+                                data-i18n="[title]modelEditor:t-delModel;modelEditor:delModel"></button>
+                        </div>
+                        <div class="row">
+                            <div class="col">
+                                <label for="model-id">ID</label>
+                                <input class="model-input" id="model-id" required>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <label data-i18n="modelEditor:type"></label>
+                        </div>
+                        <div class="row">
+                            <div class="col">
+                                <input id="model-type-program" type="radio" class="model-radio" name="model-type"
+                                    value="program">
+                                <label for="model-type-program" data-toggle="tooltip" data-placement="right"
+                                    data-animation="false"
+                                    data-i18n="[title]modelEditor:t-type-program;modelEditor:type-program">
+                                </label>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col">
+                                <input id="model-type-user" type="radio" class="model-radio" name="model-type"
+                                    value="user">
+                                <label for="model-type-user" data-toggle="tooltip" data-placement="right"
+                                    data-animation="false"
+                                    data-i18n="[title]modelEditor:t-type-user;modelEditor:type-user">
+                                </label>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col">
+                                <input id="model-type-end" type="radio" class="model-radio" name="model-type"
+                                    value="user">
+                                <label for="model-type-end" data-toggle="tooltip" data-placement="right"
+                                    data-animation="false"
+                                    data-i18n="[title]modelEditor:t-type-end;modelEditor:type-end">
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- model editor NODE PANEL-->
+                    <div id="model-node-configuration" class="hide">
+                        <div class="row">
+                            <h4 data-i18n="modelEditor:optionsNode"></h4>
+                        </div>
+                        <div class="row">
+                            <div class="col">
+                                <label for="model-node-label" data-i18n="modelEditor:nodeLabel"></label>
+                                <input class="model-input" id="model-node-label">
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col">
+                                <input type="checkbox" id="model-stopAllNode">
+                                <label for="model-stopAllNode" data-toggle="tooltip" data-placement="top"
+                                    data-animation="false"
+                                    data-i18n="[title]modelEditor:t-stopAllNode;modelEditor:stopAllNode"></label>
+                            </div>
+                        </div>
+                        <div class="row mt-2 model-priority-div">
+                            <div class="col">
+                                <label data-toggle="tooltip" data-placement="top" data-animation="false"
+                                    data-i18n="[title]modelEditor:t-priority;modelEditor:priority"></label>
+                            </div>
+                        </div>
+                        <div class="row model-priority-div">
+                            <div class="col" id="model-priority-changer"></div>
+                        </div>
+                    </div>
+
+                    <!-- model editor EDGE PANEL -->
+                    <div id="model-edge-configuration" class="hide">
+                        <div class="row">
+                            <h4 data-i18n="modelEditor:optionsEdge"></h4>
+                        </div>
+                        <div class="row">
+                            <div class="col">
+                                <label for="model-edge-label" data-i18n="modelEditor:edgeLabel">Name</label>
+                                <input class="model-input" id="model-edge-label">
+                            </div>
+                        </div>
+                        <div class="row mt-1">
+                            <label data-i18n="modelEditor:forceTest" data-toggle="tooltip" data-placement="top"
+                                data-animation="false"></label>
+                        </div>
+                        <div class="row">
+                            <div class="col mt-1" style="padding-right: 0;">
+                                <label for="model-forceTestAfter" data-toggle="tooltip" data-placement="top"
+                                    data-animation="false"
+                                    data-i18n="[title]modelEditor:t-forceTestAfter;modelEditor:forceTestAfter"></label>
+                            </div>
+                            <div class="col-4" style="padding-left: 0;">
+                                <input id="model-forceTestAfter" class="model-input">
+                                <label class="mt-1 model-unit" data-i18n="modelEditor:ms"></label>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col mt-1" style="padding-right: 0;">
+                                <label for="model-forceTestAt" data-toggle="tooltip" data-placement="top"
+                                    data-animation="false"
+                                    data-i18n="[title]modelEditor:t-forceTestAt;modelEditor:forceTestAt"></label>
+                            </div>
+                            <div class="col-4" style="padding-left: 0;">
+                                <input id="model-forceTestAt" class="model-input">
+                                <label class="mt-1 model-unit" data-i18n="modelEditor:ms"></label>
+                            </div>
+                        </div>
+                        <div class="row mt-2">
+                            <label class="mt-1" data-toggle="tooltip" data-placement="top" data-animation="false"
+                                data-i18n="[title]modelEditor:t-conditions;modelEditor:conditions"></label>
+                            <button id="model-editor-addC" type="button" data-i18n="modelEditor:add"
+                                class="model-button model-small-button right" style="float:right;"></button>
+                        </div>
+                        <div class="row">
+                            <div class="col check-container" id="model-conditions"></div>
+                        </div>
+                        <div class="row mt-1">
+                            <label id="model-effect-or-input-label" class="mt-1" data-toggle="tooltip"
+                                data-placement="top" data-animation="false"
+                                data-i18n="[title]modelEditor:t-effects;modelEditor:effects"></label>
+                            <button id="model-editor-addE" type="button" data-i18n="modelEditor:add"
+                                class="model-button model-small-button right" style="float:right;"></button>
+                        </div>
+                        <div class="row">
+                            <div id="model-effects" class="col check-container"></div>
+                        </div>
+                    </div>
+
+                    <!-- model editor EDGE CHECK PANEL -->
+                    <div id="model-edge-check-div" class="hide">
+                        <div class="row">
+                            <button id="model-check-back" type="button" class="col2 model-button btn-sm"
+                                data-i18n="modelEditor:back"></button>
+                            <button id="model-check-save" type="button" class="col2 right model-button btn-sm"
+                                data-i18n="modelEditor:saveCheck"></button>
+                        </div>
+                        <div class="row mt-2">
+                            <h4 id="model-check-label" data-i18n="modelEditor:condition"></h4>
+                        </div>
+                        <div class="row mt-1">
+                            <div class="col" style="padding-left: 0;">
+                                <label for="model-edge-check" data-i18n="modelEditor:edgeCheckType"></label>
+                                <select id="model-edge-check" name="model-edge-check"></select>
+                            </div>
+                        </div>
+                        <div class="row mt-1" id="model-negated-div">
+                            <div class="col">
+                                <input id="model-check-negated" type="checkbox">
+                                <label for="model-check-negated"
+                                    data-i18n="[title]modelEditor:t-negated;modelEditor:negated"></label>
+                            </div>
+                        </div>
+                        <div class="row mt-2">
+                            <div class="col" id="model-check-args"></div>
+                        </div>
+                        <div class="row mt-2" id="model-check-explanation"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Buttons belonging to model editor -->
+        <div class="col-lg-12 spacer50">
+
+            <!-- Load tests button -->
+            <button id="model-editor-apply" type="button" class="btn btn-sm btn-main vm-related" data-toggle="tooltip"
+                data-placement="top" data-animation="false"
+                data-i18n="[title]modelEditor:t-load;modelEditor:load;"></button>
+
+            <!-- Download tests button -->
+            <button id="model-editor-save-model" type="button" class="btn btn-sm btn-main" data-toggle="tooltip"
+                data-placement="top" data-animation="false"
+                data-i18n="[title]modelEditor:t-save-model;modelEditor:save-model;"></button>
+
+            <!-- Download tests button -->
+            <button id="model-editor-save-user-model" type="button" class="btn btn-sm btn-main" data-toggle="tooltip"
+                data-placement="top" data-animation="false"
+                data-i18n="[title]modelEditor:t-save-user-model;modelEditor:save-user-model;"></button>
+
+            <!-- Minimized models button -->
+            <button id="model-minimize-btn" type="button" class="btn btn-sm btn-main" data-toggle="tooltip"
+                data-placement="top" data-animation="false"
+                data-i18n="[title]modelEditor:t-minimize-models;modelEditor:minimize-models"></button>
+        </div>
+    </div>
+
+    <h1>学生課題チェック</h1>
+
+    <div class="table-container">
+        <table class="table" id="assignmentTable">
+            <thead>
+                <tr>
+                    <th>課題 (ファイル選択 / ドラッグ＆ドロップ)</th>
+                    <th style="text-align: center;">判定結果</th>
+                </tr>
+            </thead>
+            <tbody id="tableBody">
+                <!-- Javascriptで動的に生成 -->
+            </tbody>
+        </table>
+    </div>
+
+    <!-- WhiskerやScratch-guiが実行時に要求する可能性のあるキャンバス要素 (Headless用) -->
+    <div id="scratch-stage-container">
+        <canvas id="scratch-stage" tabindex="1" width="480" height="360"></canvas>
+    </div>
+
+    <script>
+        // ===【設定】=========================================
+        // 課題の数 (n行) をここで変更できます
+        const ASSIGNMENT_COUNT = 5;
+
+        // 判定用スクリプトの配置ディレクトリ
+        const SCRIPT_BASE_DIR = 'kadai/';
+        // ====================================================
+
+        document.addEventListener('DOMContentLoaded', () => {
+            const tableBody = document.getElementById('tableBody');
+
+            for (let i = 1; i <= ASSIGNMENT_COUNT; i++) {
+                const kadaiId = i.toString().padStart(2, '0'); // '01', '02', ...
+
+                const tr = document.createElement('tr');
+
+                // --- 列1: ファイルアップロード用のセル ---
+                const tdInput = document.createElement('td');
+                const dropZone = document.createElement('div');
+                dropZone.className = 'drop-zone';
+                dropZone.innerHTML = `
+                    <div style="font-size: 1.2em; font-weight: bold; margin-bottom: 5px; color: #2d3748;">課題 ${kadaiId}</div>
+                    <div class="drop-zone-text">sb3ファイルをドラッグ＆ドロップ<br>または</div>
+                    <button class="btn-upload" onclick="document.getElementById('file-input-${kadaiId}').click()">ファイルを選択</button>
+                    <input type="file" id="file-input-${kadaiId}" accept=".sb3">
+                    <div class="file-label" id="file-name-${kadaiId}">未選択</div>
+                `;
+                tdInput.appendChild(dropZone);
+
+                // --- 列2: 判定結果のセル ---
+                const tdResult = document.createElement('td');
+                tdResult.className = 'result-col status-unexecuted';
+                tdResult.id = `result-${kadaiId}`;
+                tdResult.textContent = '未実行';
+
+                tr.appendChild(tdInput);
+                tr.appendChild(tdResult);
+                tableBody.appendChild(tr);
+
+                // --- イベントリスナーの登録 ---
+                const fileInput = document.getElementById(`file-input-${kadaiId}`);
+                const fileNameDisplay = document.getElementById(`file-name-${kadaiId}`);
+
+                // ドラッグ&ドロップのイベント設定
+                dropZone.addEventListener('dragover', (e) => {
+                    e.preventDefault();
+                    dropZone.classList.add('hover');
+                });
+
+                dropZone.addEventListener('dragleave', (e) => {
+                    e.preventDefault();
+                    dropZone.classList.remove('hover');
+                });
+
+                dropZone.addEventListener('drop', (e) => {
+                    e.preventDefault();
+                    dropZone.classList.remove('hover');
+                    const file = e.dataTransfer.files[0];
+                    if (file && file.name.endsWith('.sb3')) {
+                        fileInput.files = e.dataTransfer.files; // input要素にも状態を同期
+                        fileNameDisplay.textContent = file.name;
+                        startCheck(kadaiId, file);
+                    } else {
+                        alert('拡張子が.sb3のScratchプロジェクトファイルを選択してください。');
+                    }
+                });
+
+                // ボタンからのファイル選択時のイベント設定
+                fileInput.addEventListener('change', (e) => {
+                    const file = e.target.files[0];
+                    if (file && file.name.endsWith('.sb3')) {
+                        fileNameDisplay.textContent = file.name;
+                        startCheck(kadaiId, file);
+                    } else {
+                        fileNameDisplay.textContent = '未選択';
+                    }
+                });
+            }
+        });
+
+        const testCache = {};
+
+        async function loadKadaiTestsAndEval(kadaiId) {
+            if (testCache[kadaiId]) return testCache[kadaiId];
+
+            const src = `${SCRIPT_BASE_DIR}kadai${kadaiId}.js`;
+            const response = await fetch(src);
+            if (!response.ok) throw new Error(`ファイル ${src} の読み込みに失敗しました。`);
+
+            const scriptContent = await response.text();
+
+            let testsRaw = null;
+            try {
+                // 取得したJSを関数スコープ内で評価する (複数課題間で const 変数等の名前衝突を防ぐ)
+                // eslint-disable-next-line no-eval
+                testsRaw = eval(`(function () { const module = { exports: {} }; \n${scriptContent}\n; return module.exports; })();`);
+            } catch (err) {
+                // Whisker形式のテストではなく、単純な関数定義(グローバル)の場合のフォールバック用としてタグ埋め込みも試行
+                console.warn(`Whisker形式の解析には失敗しました。レガシー形式としてロードを試みます: ${err.message}`);
+                
+                await new Promise((resolve, reject) => {
+                    const script = document.createElement('script');
+                    script.src = src;
+                    script.onload = resolve;
+                    script.onerror = () => reject(new Error(`スクリプト ${src} の読み込みに失敗しました。`));
+                    document.head.appendChild(script);
+                });
+                return null;
+            }
+
+            testCache[kadaiId] = testsRaw;
+            return testsRaw;
+        }
+
+        // ファイルが読み込まれたら即座にチェック開始
+        async function startCheck(kadaiId, file) {
+            const resultCell = document.getElementById(`result-${kadaiId}`);
+
+            // 状態を「判定中」に変更
+            resultCell.textContent = '判定中...';
+            resultCell.className = 'result-col status-checking';
+
+            try {
+                // 1. 各課題用のJSコードを取得してテストを取り出す
+                const testsRaw = await loadKadaiTestsAndEval(kadaiId);
+
+                // 2. sb3ファイルを ArrayBuffer として読み取る
+                const arrayBuffer = await new Promise((resolve, reject) => {
+                    const reader = new FileReader();
+                    reader.onload = (e) => resolve(e.target.result);
+                    reader.onerror = (e) => reject(new Error("ファイルの読み込み中にエラーが発生しました。"));
+                    reader.readAsArrayBuffer(file);
+                });
+
+                // 3. Whisker VMの準備ができているか確認
+                if (!window.Whisker || !window.Whisker.scratch || !window.Whisker.scratch.vm) {
+                    throw new Error("Whisker / Scratch VM の初期化が完了していません。再読み込みをお試しください。");
+                }
+
+                const vm = window.Whisker.scratch.vm;
+
+                // 4. バックグラウンドで干渉しないよう現在実行されていれば停止する
+                vm.stopAll();
+                
+                // 5. 判定ロジックの呼び出し
+                let isSuccess = false;
+
+                // kadai*.js が Whisker のテスト形式 ( module.exports = [{test: ..., ...}] ) を想定
+                if (testsRaw && Array.isArray(testsRaw) && testsRaw.length > 0 && typeof testsRaw[0].test === 'function') {
+                    // Whisker Test Runner 経由で実行
+                    const tests = window.Whisker.TestRunnerClass.convertTests(testsRaw);
+                    const props = {
+                        accelerationFactor: 1,
+                        seed: Date.now(),
+                        projectName: "kadai",
+                        mutators: ['NONE'],
+                        mutationBudget: 0,
+                        maxMutants: 0,
+                        mutantDownload: false,
+                        log: false,
+                        headless: true,
+                        useSaveStates: false,
+                        traceBlockCoverage: false,
+                        traceBranchCoverage: false,
+                        traceAttributes: false,
+                        traceDebug: false
+                    };
+                    
+                    // sb3をVMにロードする処理は testRunner.runTests の内部でも実施されるためそのまま投げる
+                    const [finalResults] = await window.Whisker.testRunner.runTests(
+                        vm, 
+                        arrayBuffer, 
+                        tests, 
+                        window.Whisker.modelTester, 
+                        props
+                    );
+                    
+                    if (finalResults && finalResults["kadai"] && finalResults["kadai"].length > 0) {
+                        const status = finalResults["kadai"][0].status;
+                        isSuccess = (status === window.Whisker.TestClass.PASS);
+                    } else {
+                        throw new Error("テスト結果が取得できませんでした。");
+                    }
+                } else {
+                    // 単純な関数エクスポートの場合のフォールバック (従来の check() 呼び出し)
+                    await vm.loadProject(arrayBuffer); // ここでロード
+                    
+                    const specificCheckFunc = window[`check${kadaiId}`];
+                    const commonCheckFunc = window.check;
+                    
+                    if (typeof specificCheckFunc === 'function') {
+                        isSuccess = await specificCheckFunc(vm.runtime);
+                    } else if (typeof commonCheckFunc === 'function') {
+                        isSuccess = await commonCheckFunc(vm.runtime);
+                    } else {
+                        throw new Error(`判定用関数 check(runtime) または Whisker 形式のテストが見つかりません。`);
+                    }
+                }
+
+                // 6. 判定結果の表示更新
+                if (isSuccess === true || isSuccess === '合格' || isSuccess === 'Success') {
+                    // ※check関数が boolean を返す想定ですが、柔軟に対応できるようにしています。
+                    resultCell.textContent = '合格';
+                    resultCell.className = 'result-col status-success';
+                } else {
+                    resultCell.textContent = '不合格';
+                    resultCell.className = 'result-col status-fail';
+                }
+
+            } catch (error) {
+                console.error("判定中にエラーが発生しました:", error);
+                resultCell.textContent = 'エラー'; // 長いメッセージはツールチップ等にした方が良いかもしれませんが、シンプルに表示
+                resultCell.className = 'result-col status-fail';
+                // 詳細をコンソールで確認できるようにしつつ、必要ならエラー内容をUIにも出す
+                resultCell.title = error.message;
+            }
+        }
+    </script>
+
+    <!-- Footer -->
+    <div id="footer" role="contentinfo" style="display: none;"></div>
+
+</body>
+
+</html>

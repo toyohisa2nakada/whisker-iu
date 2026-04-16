@@ -39,7 +39,7 @@ class Scratch extends EventEmitter {
         this.vm.clear();
 
         // Wait until a previous call to load the project finishes to avoid duplicate block ids.
-        while (this.vm.isLoading){
+        while (this.vm.isLoading) {
             await new Promise(r => setTimeout(r, 1000));
         }
         await this.vm.loadProject(project);
@@ -149,13 +149,20 @@ class Scratch extends EventEmitter {
             Scratch.getAssetUrl, Scratch.getAssetUrl);
 
         const renderer = new ScratchRender(canvas);
-        const audioEngine = new AudioEngine();
+        let audioEngine;
+        // try {
+        //     audioEngine = new AudioEngine();
+        // } catch (e) {
+        //     logger.warn('AudioEngine could not be initialized (likely due to missing user action):', e);
+        // }
         const SVGAdapter = new ScratchSVGRenderer.SVGRenderer();
         const bitmapAdapter = new ScratchSVGRenderer.BitmapAdapter();
 
         const vm = new VirtualMachine();
         vm.attachRenderer(renderer);
-        vm.attachAudioEngine(audioEngine);
+        if (audioEngine) {
+            vm.attachAudioEngine(audioEngine);
+        }
         vm.attachStorage(storage);
         vm.attachV2SVGAdapter(SVGAdapter);
         vm.attachV2BitmapAdapter(bitmapAdapter);
@@ -195,7 +202,7 @@ class Scratch extends EventEmitter {
             canvasHeight: rect.height
         };
         this.vm.postIOData('mouse', data);
-        this.emit(Scratch.INPUT_LISTENER_KEY, {device: 'mouse', ...data});
+        this.emit(Scratch.INPUT_LISTENER_KEY, { device: 'mouse', ...data });
     }
 
     onMouseDown(e) {
@@ -210,7 +217,7 @@ class Scratch extends EventEmitter {
             canvasHeight: rect.height
         };
         this.vm.postIOData('mouse', data);
-        this.emit(Scratch.INPUT_LISTENER_KEY, {device: 'mouse', ...data});
+        this.emit(Scratch.INPUT_LISTENER_KEY, { device: 'mouse', ...data });
     }
 
     onMouseUp(e) {
@@ -225,7 +232,7 @@ class Scratch extends EventEmitter {
             canvasHeight: rect.height
         };
         this.vm.postIOData('mouse', data);
-        this.emit(Scratch.INPUT_LISTENER_KEY, {device: 'mouse', ...data});
+        this.emit(Scratch.INPUT_LISTENER_KEY, { device: 'mouse', ...data });
     }
 
     onKeyDown(e) {
@@ -236,7 +243,7 @@ class Scratch extends EventEmitter {
             isDown: true
         };
         this.vm.postIOData('keyboard', data);
-        this.emit(Scratch.INPUT_LISTENER_KEY, {device: 'keyboard', ...data});
+        this.emit(Scratch.INPUT_LISTENER_KEY, { device: 'keyboard', ...data });
     }
 
     onKeyUp(e) {
@@ -246,7 +253,7 @@ class Scratch extends EventEmitter {
             isDown: false
         };
         this.vm.postIOData('keyboard', data);
-        this.emit(Scratch.INPUT_LISTENER_KEY, {device: 'keyboard', ...data});
+        this.emit(Scratch.INPUT_LISTENER_KEY, { device: 'keyboard', ...data });
     }
 
     onQuestion() {
@@ -261,7 +268,7 @@ class Scratch extends EventEmitter {
             const textInput = this.keyPresses.join('');
             this.vm.runtime.emit('ANSWER', textInput);
             this.vm.runtime.emit('ANSWERED_PROGRAMMATICALLY');
-            this.emit(Scratch.INPUT_LISTENER_KEY, {device: 'text', text: textInput});
+            this.emit(Scratch.INPUT_LISTENER_KEY, { device: 'text', text: textInput });
             this.keyPresses = [];
             this.canvas.removeEventListener('keydown', this._registerKeyPress);
         } else {

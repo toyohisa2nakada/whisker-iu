@@ -35,7 +35,7 @@ const modelEditorEN = require('./locales/en/modelEditor.json');
 const {$} = require('./web-libs');
 
 /* Replace this with the path of whisker's source for now. Will probably be published as a npm module later. */
-const {CoverageGenerator, TestRunner, TAP13Listener, Search, TAP13Formatter, ModelTester} = require('whisker-main');
+const {CoverageGenerator, TestRunner, Test, TAP13Listener, Search, TAP13Formatter, ModelTester} = require('whisker-main');
 
 /* Components */
 const TestTable = require('./components/test-table');
@@ -51,6 +51,8 @@ const ModelEditor = require('./components/model-editor');
 const {showModal, escapeHtml} = require('./utils.js');
 const logger = require('./logger');
 const Whisker = window.Whisker = {};
+Whisker.TestRunnerClass = TestRunner;
+Whisker.TestClass = Test;
 window.$ = $;
 
 /* Acceleration */

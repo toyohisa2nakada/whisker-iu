@@ -131,12 +131,19 @@ class Scratch extends EventEmitter {
         storage.addWebStore([AssetType.Project], Scratch.getProjectUrl, Scratch.getProjectUrl, Scratch.getProjectUrl);
         storage.addWebStore([AssetType.ImageVector, AssetType.ImageBitmap, AssetType.Sound], Scratch.getAssetUrl, Scratch.getAssetUrl, Scratch.getAssetUrl);
         const renderer = new ScratchRender(canvas);
-        const audioEngine = new AudioEngine();
+        let audioEngine;
+        // try {
+        //     audioEngine = new AudioEngine();
+        // } catch (e) {
+        //     logger.warn('AudioEngine could not be initialized (likely due to missing user action):', e);
+        // }
         const SVGAdapter = new ScratchSVGRenderer.SVGRenderer();
         const bitmapAdapter = new ScratchSVGRenderer.BitmapAdapter();
         const vm = new VirtualMachine();
         vm.attachRenderer(renderer);
-        vm.attachAudioEngine(audioEngine);
+        if (audioEngine) {
+            vm.attachAudioEngine(audioEngine);
+        }
         vm.attachStorage(storage);
         vm.attachV2SVGAdapter(SVGAdapter);
         vm.attachV2BitmapAdapter(bitmapAdapter);
