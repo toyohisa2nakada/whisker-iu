@@ -2,12 +2,12 @@
     "extends": "../tsconfig.json",
     "compilerOptions": {
         "rootDir": "src",
-        "outDir": "dist"
-        //"sourceMap": true               // Helps debugging by mapping ts positions to compiled js code
+        "outDir": "dist",
+        "moduleResolution": "node",
+        "esModuleInterop": true,
+        "allowSyntheticDefaultImports": true,
+        "module": "es6",
+        "target": "es6"
     },
-    "esModuleInterop": true,
-    "allowSyntheticDefaultImports": true,
-    "module": "es6",
-    "moduleResolution": "node",
-    "target": "es6"
+    "include": ["src/**/*"]
 }
