@@ -26,7 +26,8 @@
         "servant": "yarn --cwd servant node servant.js",
         "test": "yarn --cwd whisker-main test && yarn --cwd servant unittest",
         "integrationtest": "yarn --cwd whisker-web test && yarn --cwd servant integrationtest",
-        "clean:cache": "rm -rf **/.webpack-cache*"
+        "clean:cache": "rm -rf **/.webpack-cache*",
+        "dev": "npx serve ./whisker-web/dist"
     },
     "dependencies": {
         "@tensorflow/tfjs": "^4.22.0",
