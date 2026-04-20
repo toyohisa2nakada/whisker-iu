@@ -1,12 +1,12 @@
 import i18next from 'i18next';
 import locI18next from 'loc-i18next';
-import {NeatestSuiteExecutor} from 'whisker-main/src/whisker/agentTraining/suiteExecutor/NeatestSuiteExecutor';
-import {QSuiteExecutor} from 'whisker-main/src/whisker/agentTraining/suiteExecutor/QSuiteExecutor';
-import {StateActionRecorder} from 'whisker-main/src/whisker/agentTraining/neuroevolution/misc/StateActionRecorder';
-import {Randomness} from 'whisker-main/src/whisker/utils/Randomness';
-import {FileSaver} from './web-libs';
+import { NeatestSuiteExecutor } from 'whisker-main/src/whisker/agentTraining/suiteExecutor/NeatestSuiteExecutor';
+import { QSuiteExecutor } from 'whisker-main/src/whisker/agentTraining/suiteExecutor/QSuiteExecutor';
+import { StateActionRecorder } from 'whisker-main/src/whisker/agentTraining/neuroevolution/misc/StateActionRecorder';
+import { Randomness } from 'whisker-main/src/whisker/utils/Randomness';
+import { FileSaver } from './web-libs';
 import uid from 'scratch-vm/src/util/uid';
-import {Container} from 'whisker-main/src/whisker/utils/Container';
+import { Container } from 'whisker-main/src/whisker/utils/Container';
 import JSZip from 'jszip';
 
 /* Translation resources */
@@ -32,10 +32,10 @@ const modelEditorDE = require('./locales/de/modelEditor.json');
 const modelEditorEN = require('./locales/en/modelEditor.json');
 
 /* Important libraries */
-const {$} = require('./web-libs');
+const { $ } = require('./web-libs');
 
 /* Replace this with the path of whisker's source for now. Will probably be published as a npm module later. */
-const {CoverageGenerator, TestRunner, Test, TAP13Listener, Search, TAP13Formatter, ModelTester} = require('whisker-main');
+const { CoverageGenerator, TestRunner, Test, TAP13Listener, Search, TAP13Formatter, ModelTester } = require('whisker-main');
 
 /* Components */
 const TestTable = require('./components/test-table');
@@ -48,7 +48,7 @@ require('./components/footer'); // attaches an event listener as side effect
 require('./components/header'); // attaches an event listener as side effect
 const ModelEditor = require('./components/model-editor');
 
-const {showModal, escapeHtml} = require('./utils.js');
+const { showModal, escapeHtml } = require('./utils.js');
 const logger = require('./logger');
 const Whisker = window.Whisker = {};
 Whisker.TestRunnerClass = TestRunner;
@@ -362,24 +362,24 @@ const _generateResults = function (coverage, coverageModels, summary) {
         return;
     }
     const coveredBlockIdsPerSprite =
-        [...coverage.coveredBlockIdsPerSprite].map(elem => ({key: elem[0], values: [...elem[1]]}));
+        [...coverage.coveredBlockIdsPerSprite].map(elem => ({ key: elem[0], values: [...elem[1]] }));
     const blockIdsPerSprite =
-        [...coverage.blockIdsPerSprite].map(elem => ({key: elem[0], values: [...elem[1]]}));
+        [...coverage.blockIdsPerSprite].map(elem => ({ key: elem[0], values: [...elem[1]] }));
 
     const modelCoverage = [];
     if (Whisker.modelTester.programModelsLoaded()) {
         for (const modelName in coverageModels) {
             const content = [];
             const elem = coverageModels[modelName];
-            content.push({key: 'covered', values: elem.covered});
-            content.push({key: 'total', values: elem.total});
-            content.push({key: 'missedEdges', values: elem.missedEdges});
-            modelCoverage.push({key: modelName, values: content});
+            content.push({ key: 'covered', values: elem.covered });
+            content.push({ key: 'total', values: elem.total });
+            content.push({ key: 'missedEdges', values: elem.missedEdges });
+            modelCoverage.push({ key: modelName, values: content });
         }
     }
-    const serializableCoverageObject = {coveredBlockIdsPerSprite, blockIdsPerSprite};
-    const serializableModelCoverage = {modelCoverage};
-    window.messageServantCallback({serializableCoverageObject, summary, serializableModelCoverage});
+    const serializableCoverageObject = { coveredBlockIdsPerSprite, blockIdsPerSprite };
+    const serializableModelCoverage = { modelCoverage };
+    window.messageServantCallback({ serializableCoverageObject, summary, serializableModelCoverage });
 };
 
 const _printSummaryForTestsAndModels = function (summary, coverage) {
@@ -390,15 +390,15 @@ const _printSummaryForTestsAndModels = function (summary, coverage) {
     const formattedSummary = TAP13Formatter.formatSummary(summary);
     const formattedCoverage = TAP13Formatter.formatCoverage(coverage.getCoveragePerSprite());
 
-    const summaryString = TAP13Formatter.extraToYAML({summary: formattedSummary});
-    const coverageString = TAP13Formatter.extraToYAML({coverage: formattedCoverage});
+    const summaryString = TAP13Formatter.extraToYAML({ summary: formattedSummary });
+    const coverageString = TAP13Formatter.extraToYAML({ coverage: formattedCoverage });
 
     let modelCoverageString = '';
 
     // Add model coverage if we have model-based results
     if (Object.keys(coverageModels).length > 0) {
         const formattedModelCoverage = TAP13Formatter.formatModelCoverage(coverageModels);
-        modelCoverageString = TAP13Formatter.extraToYAML({modelCoverage: formattedModelCoverage});
+        modelCoverageString = TAP13Formatter.extraToYAML({ modelCoverage: formattedModelCoverage });
     }
 
     Whisker.outputRun.println([
@@ -478,7 +478,7 @@ const _runTestsWithCoverage = async function (vm, project, tests, tracerSettings
     if (tracerSettings.traceAttributes) {
         Whisker.testRunner.on(TestRunner.RUN_END, () => {
             const blob = new Blob([JSON.stringify(Whisker.testRunner.attributeTraces)],
-                {type: 'application/json;charset=utf-8'});
+                { type: 'application/json;charset=utf-8' });
             FileSaver.saveAs(blob, `BlockTrace-${Whisker.projectFileSelect.getName()}.json`);
         });
     }
@@ -639,7 +639,7 @@ const runAllTests = async function () {
             _printSummaryForTestsAndModels(summary, coverage);
         } else {
             const formattedCoverage = TAP13Formatter.formatCoverage(coverage.getCoveragePerSprite());
-            const coverageString = TAP13Formatter.extraToYAML({coverage: formattedCoverage});
+            const coverageString = TAP13Formatter.extraToYAML({ coverage: formattedCoverage });
 
             Whisker.outputRun.println([
                 coverageString
@@ -754,7 +754,7 @@ window.Whisker.runTestsForRepair = async function () {
     const runTests = timings.reduce((s, timing) => timing.runTest + s, 0);
 
     // The coverage achieved by the entire test suite.
-    const {covered, total} = CoverageGenerator.getCoverage().getCoverageTotal();
+    const { covered, total } = CoverageGenerator.getCoverage().getCoverageTotal();
 
     return {
         traces,
@@ -1017,7 +1017,7 @@ const _showTooltipIfTooLong = function (label, event) {
         .tooltip('dispose');
     if (label.scrollWidth > label.offsetWidth) {
         $(event.target).parent()
-            .tooltip({animation: true});
+            .tooltip({ animation: true });
         setTimeout(() => {
             $(event.target).parent()
                 .tooltip('hide');
@@ -1123,7 +1123,7 @@ const initEvents = function () {
 
                 // Download the recording.
                 const recording = Whisker.stateActionRecorder.getRecord();
-                const blob = new Blob([JSON.stringify(recording)], {type: 'application/json;charset=utf-8'});
+                const blob = new Blob([JSON.stringify(recording)], { type: 'application/json;charset=utf-8' });
                 FileSaver.saveAs(blob, `${Whisker.projectFileSelect.getName().replace('.sb3', '')}.json`);
             } else {
                 Whisker.inputRecorder.emit('startRecording');
@@ -1149,7 +1149,7 @@ const initEvents = function () {
     };
     const modelCoverage = coverage => {
         const formattedModelCoverage = TAP13Formatter.formatModelCoverageLastRun(coverage);
-        Whisker.outputLog.println(TAP13Formatter.extraToYAML({modelCoverageLastRun: formattedModelCoverage}));
+        Whisker.outputLog.println(TAP13Formatter.extraToYAML({ modelCoverageLastRun: formattedModelCoverage }));
     };
     const modelCheckbox = $('#model-logs-checkbox');
     modelCheckbox.prop('checked', true);
@@ -1249,7 +1249,7 @@ const initEvents = function () {
                 const tests = runSearch();
                 tests.then(
                     result => {
-                        if ('agentTests' in result){
+                        if ('agentTests' in result) {
                             Whisker.testEditor.setAgentTests(result.agentTests);
                         } else {
                             loadTestsFromString(result.javaScriptText).then();
@@ -1396,18 +1396,19 @@ $(document)
         toggleComponents();
     });
 
-window.onbeforeunload = function () {
-    if (window.localStorage) {
-        const componentStates = [
-            $('#toggle-input').is(':checked'),
-            accSlider.slider('getValue')
-        ];
-        window.localStorage.setItem('componentStates', JSON.stringify(componentStates));
-    }
-    if (location.href.includes('index')) {
-        return ''; // Creates a popup warning that informs the user about potential loss of data (project, tests, etc.)
-    }
-};
+
+// window.onbeforeunload = function () {
+//     if (window.localStorage) {
+//         const componentStates = [
+//             $('#toggle-input').is(':checked'),
+//             accSlider.slider('getValue')
+//         ];
+//         window.localStorage.setItem('componentStates', JSON.stringify(componentStates));
+//     }
+//     if (location.href.includes('index')) {
+//         return ''; // Creates a popup warning that informs the user about potential loss of data (project, tests, etc.)
+//     }
+// };
 
 i18next
     .init({
@@ -1486,4 +1487,4 @@ $('.nav-link').on('click', event => {
     _updateFilenameLabels();
 });
 
-export {i18next as i18n};
+export { i18next as i18n };

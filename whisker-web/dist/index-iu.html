@@ -15,6 +15,7 @@
     <script type="text/javascript" src="includes/jquery.fancybox-1.3.4.pack.js"></script>
     <!-- <script type="text/javascript" src="includes/prettify.js"></script> -->
     <link rel="stylesheet" href="includes/jquery.fancybox-1.3.4.css" type="text/css" media="screen" />
+    <script src="https://cdn.tailwindcss.com"></script>
 
     <style>
         body {
@@ -426,16 +427,21 @@
     <script>
         // ===【設定】=========================================
         // 課題の数 (n行) をここで変更できます
-        const ASSIGNMENT_COUNT = 5;
+        const ASSIGNMENT_FIRST = 6;
+        const ASSIGNMENT_LAST = 11;
 
         // 判定用スクリプトの配置ディレクトリ
         const SCRIPT_BASE_DIR = 'kadai/';
         // ====================================================
 
+        const kadaiCheckFilename = (kadaiId) => {
+            return `${SCRIPT_BASE_DIR}kadai${kadaiId}.js`;
+        }
+
         document.addEventListener('DOMContentLoaded', () => {
             const tableBody = document.getElementById('tableBody');
 
-            for (let i = 1; i <= ASSIGNMENT_COUNT; i++) {
+            for (let i = ASSIGNMENT_FIRST; i <= ASSIGNMENT_LAST; i++) {
                 const kadaiId = i.toString().padStart(2, '0'); // '01', '02', ...
 
                 const tr = document.createElement('tr');
@@ -501,6 +507,11 @@
                         fileNameDisplay.textContent = '未選択';
                     }
                 });
+
+                const elem = document.createElement("a");
+                elem.href = kadaiCheckFilename(kadaiId);
+                elem.textContent = kadaiCheckFilename(kadaiId);
+                document.getElementById("toOriginalPanel").appendChild(elem);
             }
         });
 
@@ -509,7 +520,7 @@
         async function loadKadaiTestsAndEval(kadaiId) {
             if (testCache[kadaiId]) return testCache[kadaiId];
 
-            const src = `${SCRIPT_BASE_DIR}kadai${kadaiId}.js`;
+            const src = kadaiCheckFilename(kadaiId);
             const response = await fetch(src);
             if (!response.ok) throw new Error(`ファイル ${src} の読み込みに失敗しました。`);
 
@@ -523,7 +534,7 @@
             } catch (err) {
                 // Whisker形式のテストではなく、単純な関数定義(グローバル)の場合のフォールバック用としてタグ埋め込みも試行
                 console.warn(`Whisker形式の解析には失敗しました。レガシー形式としてロードを試みます: ${err.message}`);
-                
+
                 await new Promise((resolve, reject) => {
                     const script = document.createElement('script');
                     script.src = src;
@@ -567,7 +578,7 @@
 
                 // 4. バックグラウンドで干渉しないよう現在実行されていれば停止する
                 vm.stopAll();
-                
+
                 // 5. 判定ロジックの呼び出し
                 let isSuccess = false;
 
@@ -591,16 +602,16 @@
                         traceAttributes: false,
                         traceDebug: false
                     };
-                    
+
                     // sb3をVMにロードする処理は testRunner.runTests の内部でも実施されるためそのまま投げる
                     const [finalResults] = await window.Whisker.testRunner.runTests(
-                        vm, 
-                        arrayBuffer, 
-                        tests, 
-                        window.Whisker.modelTester, 
+                        vm,
+                        arrayBuffer,
+                        tests,
+                        window.Whisker.modelTester,
                         props
                     );
-                    
+
                     if (finalResults && finalResults["kadai"] && finalResults["kadai"].length > 0) {
                         const status = finalResults["kadai"][0].status;
                         isSuccess = (status === window.Whisker.TestClass.PASS);
@@ -610,10 +621,10 @@
                 } else {
                     // 単純な関数エクスポートの場合のフォールバック (従来の check() 呼び出し)
                     await vm.loadProject(arrayBuffer); // ここでロード
-                    
+
                     const specificCheckFunc = window[`check${kadaiId}`];
                     const commonCheckFunc = window.check;
-                    
+
                     if (typeof specificCheckFunc === 'function') {
                         isSuccess = await specificCheckFunc(vm.runtime);
                     } else if (typeof commonCheckFunc === 'function') {
@@ -642,6 +653,12 @@
             }
         }
     </script>
+
+    <hr>
+    <div>debug用 基本はここは触らなくてよいです</div>
+    <div id="toOriginalPanel" class="flex flex-row gap-2">
+        <a href="/?lng=en">original test site</a>
+    </div>
 
     <!-- Footer -->
     <div id="footer" role="contentinfo" style="display: none;"></div>
