@@ -447,6 +447,14 @@
         function loadStudentData() {
             return JSON.parse(localStorage.getItem(localStorage_key) ?? "{}");
         }
+        function localStorageKeyForSave() {
+            const formattedDate = new Intl.DateTimeFormat('ja-JP', {
+                year: 'numeric',
+                month: '2-digit',
+                day: '2-digit'
+            }).format(new Date()).replace(/\//g, '');
+            return `${localStorage_key}_${formattedDate}`;
+        }
 
         function updateStudentDataPanel(studentData) {
             document.getElementById("studentId").value = studentData?.studentId ?? "";
@@ -495,6 +503,7 @@
                 ...studentData,
                 ...data,
             };
+            console.log("postData", postData);
             fetch(gasURL, {
                 method: "POST",
                 mode: "no-cors",
@@ -502,6 +511,7 @@
                 body: JSON.stringify(postData)
             }).then(() => {
                 console.log("送信完了！スプレッドシートを確認してください。");
+                saveKadaiStatus(data);
             }).catch(err => {
                 console.error("エラー:", err);
             });
@@ -510,13 +520,32 @@
         console.log(studentData);
         updateStudentDataPanel(studentData);
 
+        function saveKadaiStatus(newData) {
+            const data0 = JSON.parse(localStorage.getItem(localStorageKeyForSave()) ?? "[]");
+            const index = data0.findIndex(item => item.kadaiId === newData.kadaiId);
+            if (index !== -1) {
+                data0[index] = newData;
+            } else {
+                data0.push(newData);
+            }
+            localStorage.setItem(localStorageKeyForSave(), JSON.stringify(data0));
+        }
+        function updateKadaiStatus() {
+            const data = JSON.parse(localStorage.getItem(localStorageKeyForSave()) ?? "[]");
+            data.forEach(({ kadaiId, success }) => {
+                const resultCell = document.getElementById(`result-${kadaiId}`);
+                resultCell.textContent = success;
+                resultCell.className = `result-col ${success === "合格" ? "status-success" : "status-fail"}`;
+            })
+        }
+
 
 
 
         // ===【設定】=========================================
         // 課題の数 (n行) をここで変更できます
-        const ASSIGNMENT_FIRST = 6;
-        const ASSIGNMENT_LAST = 11;
+        const ASSIGNMENT_FIRST = 1;
+        const ASSIGNMENT_LAST = 8;
 
         // 判定用スクリプトの配置ディレクトリ
         const SCRIPT_BASE_DIR = 'kadai/';
@@ -601,6 +630,8 @@
                 elem.textContent = kadaiCheckFilename(kadaiId);
                 document.getElementById("toOriginalPanel").appendChild(elem);
             }
+
+            updateKadaiStatus();
         });
 
         const testCache = {};
