@@ -556,8 +556,14 @@
         }
 
         document.addEventListener('DOMContentLoaded', () => {
-            const tableBody = document.getElementById('tableBody');
+            const originalLink = document.createElement("a");
+            console.log(window.location.href)
+            const newPath = window.location.pathname.replace(/index-iu(\.html)?$/, '');
+            originalLink.href = window.location.origin + newPath + "?lng=en";
+            originalLink.textContent = "org test";
+            document.getElementById("toOriginalPanel").appendChild(originalLink);
 
+            const tableBody = document.getElementById('tableBody');
             for (let i = ASSIGNMENT_FIRST; i <= ASSIGNMENT_LAST; i++) {
                 const kadaiId = i.toString().padStart(2, '0'); // '01', '02', ...
 
@@ -787,7 +793,6 @@
     <hr>
     <div>debug用 基本はここは触らなくてよいです</div>
     <div id="toOriginalPanel" class="flex flex-row gap-2">
-        <a href="/?lng=en">original test site</a>
     </div>
 
     <!-- Footer -->
