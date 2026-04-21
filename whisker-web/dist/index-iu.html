@@ -4,7 +4,7 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-    <title>学生課題チェック - Whisker</title>
+    <title>課題チェック - Whisker</title>
 
     <!-- 元のindex.htmlが依存しているwhisker関連のライブラリやスクリプトを読み込む -->
     <link rel="icon" type="image/png" href="assets/favicon_whisker.png" />
@@ -142,36 +142,25 @@
         }
     </style>
 
-    <script type="module">
-        document.getElementById("testForm").addEventListener("click", e => {
-            console.log("testForm");
-
-            const gasURL = "https://script.google.com/macros/s/AKfycbzgUK5_S-T_lDSsA5cgw8p23TP3YEH53V_tQfjN8Qot6WFm_8Wjj8UGiN5xgsdEwuCy/exec";
-
-            // 送信するデータ
-            const data = {
-                email: "26IM0058@i-u.ac.jp",
-                score: 90
-            };
-
-            fetch(gasURL, {
-                method: "POST",
-                mode: "no-cors", // ここを cors にする
-                headers: {
-                    "Content-Type": "text/plain", // JSONではなくtext/plainにするのがGASのコツ
-                },
-                body: JSON.stringify(data)
-            })
-                .then(response => response.json())
-                .then(res => console.log(res))
-                .catch(err => console.error("Error:", err));
-        })
-    </script>
 </head>
 
 <body>
 
-    <button id="testForm">testForm</button>
+    <div class="flex justify-center w-full">
+        <div id="userInfoContainer"
+            class="flex items-center gap-3 w-fit p-1 bg-white rounded-lg shadow-sm border border-gray-200 transition-all">
+            <input type="text" id="studentId" placeholder="学籍番号"
+                class="border border-gray-300 rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:bg-gray-100 disabled:text-gray-500 disabled:cursor-not-allowed">
+
+            <input type="text" id="studentName" placeholder="氏名"
+                class="border border-gray-300 rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:bg-gray-100 disabled:text-gray-500 disabled:cursor-not-allowed">
+
+            <button id="studentDataLock"
+                class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-6 rounded transition-colors disabled:bg-gray-500 disabled:cursor-not-allowed">
+                Lock
+            </button>
+        </div>
+    </div>
 
     <div id="header" role="navigation" style="display: none;"></div>
     <div id="model-editor" class="mt-4 spacer10" style="display: none;">
@@ -432,7 +421,7 @@
         </div>
     </div>
 
-    <h1>学生課題チェック</h1>
+    <!-- <h1>課題チェック</h1> -->
 
     <div class="table-container">
         <table class="table" id="assignmentTable">
@@ -453,7 +442,75 @@
         <canvas id="scratch-stage" tabindex="1" width="480" height="360"></canvas>
     </div>
 
-    <script>
+    <script type="module">
+        const localStorage_key = "whisker-iu-studentData";
+        function loadStudentData() {
+            return JSON.parse(localStorage.getItem(localStorage_key) ?? "{}");
+        }
+
+        function updateStudentDataPanel(studentData) {
+            document.getElementById("studentId").value = studentData?.studentId ?? "";
+            document.getElementById("studentName").value = studentData?.studentName ?? "";
+            if (studentData.studentId !== undefined) {
+                document.getElementById("studentId").disabled = true;
+                document.getElementById("studentName").disabled = true;
+                document.getElementById("studentDataLock").disabled = true;
+            }
+        }
+
+        document.getElementById("studentDataLock").addEventListener("click", () => {
+            const studentId = document.getElementById("studentId").value;
+            const studentName = document.getElementById("studentName").value;
+
+            if (!/^\d{2}IM\d{4}$/.test(studentId)) {
+                alert("学籍番号の形式が違います。");
+                return;
+            }
+            if (studentName.length === 0) {
+                alert("氏名を入力してください。");
+                return;
+            }
+
+            if (true === confirm("ロックするとあとで変更することができません。ロックしてよろしいでしょうか？")) {
+                studentData.studentId = studentId;
+                studentData.studentName = studentName;
+                localStorage.setItem(localStorage_key, JSON.stringify(studentData));
+                updateStudentDataPanel(studentData);
+            }
+
+        })
+        function checkStudentId() {
+            const ret = document.getElementById("studentId").value.length !== 0;
+            if (ret === false) {
+                alert("学籍番号、氏名を入力してLockしてください。")
+            }
+            return ret;
+        }
+        function post(data) {
+            const gasURL = "https://script.google.com/macros/s/AKfycbwOn4pY6Ac2bb2niGN29584aujma_LQG9bPaDCTX1E8uwbcXWiK8LOpnhZKcoEKbzw/exec";
+
+            const postData = {
+                ...studentData,
+                ...data,
+            };
+            fetch(gasURL, {
+                method: "POST",
+                mode: "no-cors",
+                headers: { "Content-Type": "text/plain" },
+                body: JSON.stringify(postData)
+            }).then(() => {
+                console.log("送信完了！スプレッドシートを確認してください。");
+            }).catch(err => {
+                console.error("エラー:", err);
+            });
+        }
+        const studentData = loadStudentData();
+        console.log(studentData);
+        updateStudentDataPanel(studentData);
+
+
+
+
         // ===【設定】=========================================
         // 課題の数 (n行) をここで変更できます
         const ASSIGNMENT_FIRST = 6;
@@ -580,6 +637,11 @@
 
         // ファイルが読み込まれたら即座にチェック開始
         async function startCheck(kadaiId, file) {
+
+            if (false === checkStudentId()) {
+                return;
+            }
+
             const resultCell = document.getElementById(`result-${kadaiId}`);
 
             // 状態を「判定中」に変更
@@ -668,9 +730,13 @@
                     // ※check関数が boolean を返す想定ですが、柔軟に対応できるようにしています。
                     resultCell.textContent = '合格';
                     resultCell.className = 'result-col status-success';
+
+                    post({ kadaiId, success: "合格" });
                 } else {
                     resultCell.textContent = '不合格';
                     resultCell.className = 'result-col status-fail';
+
+                    post({ kadaiId, success: "不合格" });
                 }
 
             } catch (error) {
@@ -679,6 +745,8 @@
                 resultCell.className = 'result-col status-fail';
                 // 詳細をコンソールで確認できるようにしつつ、必要ならエラー内容をUIにも出す
                 resultCell.title = error.message;
+
+                post({ kadaiId, success: "エラー" });
             }
         }
     </script>
