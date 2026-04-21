@@ -141,9 +141,38 @@
             display: none;
         }
     </style>
+
+    <script type="module">
+        document.getElementById("testForm").addEventListener("click", e => {
+            console.log("testForm");
+
+            const gasURL = "https://script.google.com/macros/s/AKfycbzgUK5_S-T_lDSsA5cgw8p23TP3YEH53V_tQfjN8Qot6WFm_8Wjj8UGiN5xgsdEwuCy/exec";
+
+            // 送信するデータ
+            const data = {
+                email: "26IM0058@i-u.ac.jp",
+                score: 90
+            };
+
+            fetch(gasURL, {
+                method: "POST",
+                mode: "no-cors", // ここを cors にする
+                headers: {
+                    "Content-Type": "text/plain", // JSONではなくtext/plainにするのがGASのコツ
+                },
+                body: JSON.stringify(data)
+            })
+                .then(response => response.json())
+                .then(res => console.log(res))
+                .catch(err => console.error("Error:", err));
+        })
+    </script>
 </head>
 
 <body>
+
+    <button id="testForm">testForm</button>
+
     <div id="header" role="navigation" style="display: none;"></div>
     <div id="model-editor" class="mt-4 spacer10" style="display: none;">
         <h3 data-i18n="modelEditor:title"></h3>
