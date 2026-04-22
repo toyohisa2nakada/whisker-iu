@@ -488,7 +488,7 @@
 
         })
         function checkStudentId() {
-            const ret = document.getElementById("studentId").value.length !== 0;
+            const ret = studentData.studentId !== undefined && studentData.studentId?.length !== 0;
             if (ret === false) {
                 alert("学籍番号、氏名を入力してLockしてください。")
             }
@@ -545,7 +545,7 @@
         // ===【設定】=========================================
         // 課題の数 (n行) をここで変更できます
         const ASSIGNMENT_FIRST = 1;
-        const ASSIGNMENT_LAST = 8;
+        const ASSIGNMENT_LAST = 6;
 
         // 判定用スクリプトの配置ディレクトリ
         const SCRIPT_BASE_DIR = 'kadai/';
