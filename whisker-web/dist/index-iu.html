@@ -470,8 +470,8 @@
             const studentId = document.getElementById("studentId").value;
             const studentName = document.getElementById("studentName").value;
 
-            if (!/^\d{2}IM\d{4}$/.test(studentId)) {
-                alert("学籍番号の形式が違います。");
+            if (!/^\d{2}IM\d{4}$/i.test(studentId)) {
+                alert("学籍番号の形式が違います。例: 25im0000");
                 return;
             }
             if (studentName.length === 0) {
