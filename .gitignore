@@ -1,0 +1,32 @@
+# NPM
+**/node_modules
+# **/dist
+./coverage
+*~
+
+# Editor
+/.idea
+/.vscode
+*.DS_Store
+
+# Build
+# */dist
+/playground
+/docs
+**/.webpack-cache*
+
+# Stuff
+/stuff
+
+# Servant specific
+/servant/node_modules
+/servant/tests
+/servant/.tmpWorkingDir
+/servant/*.csv
+/servant/evaluation.js
+
+# Generated
+/whisker-main/coverage
+
+# Local puppeteer browsers
+.cache
