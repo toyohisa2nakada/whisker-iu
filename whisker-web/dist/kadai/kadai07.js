@@ -1,10 +1,10 @@
 const test = async function (t) {
     
-    const sprite = t.getSprite('Sprite1');
+    const sprite = t.getSprite('Sprite1') ?? t.getSprite('Cat');
     const apple = t.getSprite('Apple');
     const stage = t.getStage();
     
-    t.dragSprite('Sprite1',stage.bounds.left,apple.y);
+    t.dragSprite(sprite.name,stage.bounds.left,apple.y);
     t.greenFlag();
 
     let touched = false;

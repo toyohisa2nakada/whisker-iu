@@ -1,6 +1,6 @@
 const test = async function (t) {
     
-    const sprite = t.getSprite('Sprite1');
+    const sprite = t.getSprite('Sprite1') ?? t.getSprite('Cat');
 
     await t.greenFlag();
     await t.runForTime(500);

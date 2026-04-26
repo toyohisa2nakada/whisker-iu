@@ -4,7 +4,7 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-    <title>課題チェック - Whisker</title>
+    <title>答え合わせ - Whisker</title>
 
     <!-- 元のindex.htmlが依存しているwhisker関連のライブラリやスクリプトを読み込む -->
     <link rel="icon" type="image/png" href="assets/favicon_whisker.png" />
@@ -427,7 +427,7 @@
         <table class="table" id="assignmentTable">
             <thead>
                 <tr>
-                    <th>課題 (ファイル選択 / ドラッグ＆ドロップ)</th>
+                    <th>問題 (ファイル選択 / ドラッグ＆ドロップ)</th>
                     <th style="text-align: center;">判定結果</th>
                 </tr>
             </thead>
@@ -543,9 +543,10 @@
 
 
         // ===【設定】=========================================
-        // 課題の数 (n行) をここで変更できます
-        const ASSIGNMENT_FIRST = 1;
-        const ASSIGNMENT_LAST = 6;
+        // 問題の数 (n行) をここで変更できます
+        // const ASSIGNMENT_FIRST = 1;
+        // const ASSIGNMENT_LAST = 6;
+        const ASSIGNMENTS = [11, 12, 1, 3, 4, 6, 7, 8, 9];
 
         // 判定用スクリプトの配置ディレクトリ
         const SCRIPT_BASE_DIR = 'kadai/';
@@ -564,8 +565,11 @@
             document.getElementById("toOriginalPanel").appendChild(originalLink);
 
             const tableBody = document.getElementById('tableBody');
-            for (let i = ASSIGNMENT_FIRST; i <= ASSIGNMENT_LAST; i++) {
-                const kadaiId = i.toString().padStart(2, '0'); // '01', '02', ...
+            // for (let i = ASSIGNMENT_FIRST; i <= ASSIGNMENT_LAST; i++) {
+            ASSIGNMENTS.forEach((kanriNo, mondaiId) => {
+
+                const kadaiId = kanriNo.toString().padStart(2, '0'); // '01', '02', ...
+                const mondaiNo = mondaiId + 1;
 
                 const tr = document.createElement('tr');
 
@@ -574,7 +578,7 @@
                 const dropZone = document.createElement('div');
                 dropZone.className = 'drop-zone';
                 dropZone.innerHTML = `
-                    <div style="font-size: 1.2em; font-weight: bold; margin-bottom: 5px; color: #2d3748;">課題 ${kadaiId}</div>
+                    <div style="font-size: 1.2em; font-weight: bold; margin-bottom: 5px; color: #2d3748;">問題 ${mondaiNo}</div>
                     <div class="drop-zone-text">sb3ファイルをドラッグ＆ドロップ<br>または</div>
                     <button class="btn-upload" onclick="document.getElementById('file-input-${kadaiId}').click()">ファイルを選択</button>
                     <input type="file" id="file-input-${kadaiId}" accept=".sb3">
@@ -614,7 +618,7 @@
                     if (file && file.name.endsWith('.sb3')) {
                         fileInput.files = e.dataTransfer.files; // input要素にも状態を同期
                         fileNameDisplay.textContent = file.name;
-                        startCheck(kadaiId, file);
+                        startCheck(kadaiId, mondaiNo, file);
                     } else {
                         alert('拡張子が.sb3のScratchプロジェクトファイルを選択してください。');
                     }
@@ -625,7 +629,7 @@
                     const file = e.target.files[0];
                     if (file && file.name.endsWith('.sb3')) {
                         fileNameDisplay.textContent = file.name;
-                        startCheck(kadaiId, file);
+                        startCheck(kadaiId, mondaiNo, file);
                     } else {
                         fileNameDisplay.textContent = '未選択';
                     }
@@ -633,9 +637,9 @@
 
                 const elem = document.createElement("a");
                 elem.href = kadaiCheckFilename(kadaiId);
-                elem.textContent = kadaiCheckFilename(kadaiId);
+                elem.textContent = `${mondaiNo} (${kadaiId})`;
                 document.getElementById("toOriginalPanel").appendChild(elem);
-            }
+            })
 
             updateKadaiStatus();
         });
@@ -675,7 +679,7 @@
         }
 
         // ファイルが読み込まれたら即座にチェック開始
-        async function startCheck(kadaiId, file) {
+        async function startCheck(kadaiId, mondaiNo, file) {
 
             if (false === checkStudentId()) {
                 return;
@@ -770,12 +774,12 @@
                     resultCell.textContent = '合格';
                     resultCell.className = 'result-col status-success';
 
-                    post({ kadaiId, success: "合格" });
+                    post({ kadaiId, mondaiNo, success: "合格" });
                 } else {
                     resultCell.textContent = '不合格';
                     resultCell.className = 'result-col status-fail';
 
-                    post({ kadaiId, success: "不合格" });
+                    post({ kadaiId, mondaiNo, success: "不合格" });
                 }
 
             } catch (error) {
@@ -785,7 +789,7 @@
                 // 詳細をコンソールで確認できるようにしつつ、必要ならエラー内容をUIにも出す
                 resultCell.title = error.message;
 
-                post({ kadaiId, success: "エラー" });
+                post({ kadaiId, mondaiNo, success: "エラー" });
             }
         }
     </script>

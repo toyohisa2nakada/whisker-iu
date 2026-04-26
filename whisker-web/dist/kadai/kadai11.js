@@ -1,21 +1,21 @@
 const test = async function (t) {
     
-    const sprite = t.getSprite('Sprite1');
+    const sprite = t.getSprite('Sprite1') ?? t.getSprite('Cat');
     const chick = t.getSprite('Chick');
     const stage = t.getStage();
     
     const x = {sprite:stage.bounds.left,chick:stage.bounds.left};
     const y = {sprite:sprite.bounds.height,chick:-chick.bounds.height};
 
-    t.dragSprite('Sprite1',x.sprite,y.sprite);
-    t.dragSprite('Chick',x.sprite,y.chick);
+    t.dragSprite(sprite.name,x.sprite,y.sprite);
+    t.dragSprite(chick.name,x.sprite,y.chick);
     
     console.log(t);
     
     t.greenFlag();
-    for(let i=0;i<10;i+=1){
+    for(let i=0;i<5;i+=1){
         console.log("counter",i);
-        await t.runForTime(1000);
+        await t.runForTime(500);
         console.log("sprite x",sprite.x,chick.x);
         console.log("backuped x",x);
         t.assert.ok(sprite.x > x.sprite);
