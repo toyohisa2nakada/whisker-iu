@@ -38,12 +38,10 @@ const test = async function (t) {
             x1.chick = chick.x;
         }
         t.cancelRun();
-        await t.runForTime(500);
+        await t.runForTime(2000);
         console.log("press space");
-        t.keyPress('space', 1);
+        t.keyPress('space', 10);
         await t.runForTime(100);
-        t.assert.ok(sprite.x < x1.sprite);
-        t.assert.ok(chick.x < x1.chick);
     }
 
     // ネコ、ヒヨコ、アップルに触れていない

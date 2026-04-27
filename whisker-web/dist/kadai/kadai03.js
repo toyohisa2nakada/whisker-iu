@@ -3,7 +3,8 @@ const test = async function (t) {
     const countCommandBlocks = (t) => {
         let totalCommandBlockCount = 0;
         t.vm.runtime.targets.forEach(target => {
-            const commandBlocks = Object.values(target.blocks._blocks).filter(e => e.opcode !== "sensing_touchingobjectmenu" && e.opcode !== "text");
+            const commandBlocks = Object.values(target.blocks._blocks).
+                filter(e => e.opcode !== "sensing_touchingobjectmenu" && e.opcode !== "text" && e.opcode !== "math_number");
             totalCommandBlockCount += commandBlocks.length;
         });
         return totalCommandBlockCount;
