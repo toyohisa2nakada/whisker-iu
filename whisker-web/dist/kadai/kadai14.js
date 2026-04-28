@@ -1,4 +1,8 @@
 const test = async function (t) {
+    // フレーム数に相当する時間(ms)を計算する。fps30を想定している。
+    const f2t = (frame) => frame * 1000 / 30;
+
+    // ブロック数をカウントする
     const countCommandBlocks = (t) => {
         let totalCommandBlockCount = 0;
         t.vm.runtime.targets.forEach(target => {
@@ -25,21 +29,39 @@ const test = async function (t) {
     console.log("checking stage !== undefined");
     t.assert.ok(stage !== undefined);
 
-    const x0 = { sprite: stage.bounds.left, chick: stage.bounds.left };
-    const y0 = { sprite: sprite.bounds.height, chick: -chick.bounds.height };
+    const x0 = {
+        [sprite.name]: stage.bounds.left,
+        [apple.name]: stage.bounds.left + sprite.bounds.width * 1.5,
+        [chick.name]: stage.bounds.left + sprite.bounds.width * 3.0,
+    };
+    const y0 = { sprite: sprite.bounds.height };
 
-    let x1 = { ...x0 };
-    let y1 = { ...y0 };
-    
+    Object.keys(x0).forEach(name => {
+        t.dragSprite(name, x0[name], y0.sprite);
+    })
+
+    let x1 = x0[sprite.name];
     t.greenFlag();
-    for(let i=0;i<10;i++){
-        await t.runForTime(33);
-        console.log("b"+i,sprite.x);
+    for (let i = 0; i < 2000 && sprite.isTouchingSprite(apple.name)===false; i++) {
+        await t.runForTime(f2t(1));
+        const dx = sprite.x - x1;
+        console.log(`dx>=0 && dx<2 dx=${dx}`);
+        t.assert.ok(dx >= 0 && dx < 2);
+        x1 = sprite.x;
     }
-    t.cancelRun();
-    for(let i=0;i<10;i++){
-        await t.runForTime(33);
-        console.log("a"+i,sprite.x);
+    for (let i = 0; i < 2000 && sprite.isTouchingSprite(chick.name)===false; i++) {
+        await t.runForTime(f2t(1));
+        const dx = sprite.x - x1;
+        console.log(`dx>1 dx=${dx}`);
+        t.assert.ok(dx > 1);
+        x1 = sprite.x;
+    }
+    for (let i=0;i<100;i++){
+        await t.runForTime(f2t(1));
+        const dx = sprite.x - x1;
+        console.log(`dx>=0 && dx<2 dx=${dx}`);
+        t.assert.ok(dx >= 0 && dx < 2);
+        x1 = sprite.x;
     }
 
 
