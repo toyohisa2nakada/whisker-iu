@@ -4,10 +4,17 @@ const test = async function (t) {
 
     // ブロック数をカウントする
     const countCommandBlocks = (t) => {
+        const ignoreBlockOpcodes = [
+            "sensing_touchingobjectmenu",
+            "text",
+            "math_number",
+            "math_whole_number",
+            "math_positive_number",
+        ];
         let totalCommandBlockCount = 0;
         t.vm.runtime.targets.forEach(target => {
             const commandBlocks = Object.values(target.blocks._blocks).
-                filter(e => e.opcode !== "sensing_touchingobjectmenu" && e.opcode !== "text" && e.opcode !== "math_number" && e.opcode !== "math_whole_number");
+                filter(e => !ignoreBlockOpcodes.includes(e.opcode));
             totalCommandBlockCount += commandBlocks.length;
         });
         return totalCommandBlockCount;
